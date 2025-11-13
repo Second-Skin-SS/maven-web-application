@@ -1,0 +1,25 @@
+node {
+    echo "Job Name is: ${env.JOB_NAME}"
+    echo "Node  Name is: ${env.NODE_NAME}"
+    echo "Build Number is : ${env.BUILD_NUMBER}"
+
+     def maven = tool name :'Maven 3.9.11'
+   
+    stage('CheckOut Code'){
+        git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a', url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
+    }
+    stage ('build package'){
+       sh "${maven}/bin/mvn clean package"
+    }
+    stage ('ExecuteSonarQubeReport'){
+        sh "${maven}/bin/mvn sonar:sonar"
+    }
+    stage('PushInto ArtifactoryRepository'){
+        sh "${maven}/bin/mvn deploy"
+    }
+    stage('DeployAppIntoTomcat'){
+        sshagent(['2057eae4-4ef1-486e-b72c-b1ccc1e57b9b']) {
+        sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@13.233.161.50:/opt/apache-tomcat-9.0.110/webapps'
+        }
+    }
+}
