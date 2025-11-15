@@ -22,7 +22,7 @@ def pipeLineScript(String buildStatus = 'STARTED') {
   }
 
   // Send notifications
-  slackSend (currentBuild.result)
+  pipeLineScript(currentBuild.result)
 }
 
 node {
