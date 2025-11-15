@@ -47,7 +47,7 @@ node {
         sh "${maven}/bin/mvn deploy"
     }
     stage('DeployAppIntoTomcat'){
-        sshagent(['2057eae4-4ef1-486e-b72c-b1ccc1e57b9b']) {
+        sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
         sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@13.233.161.50:/opt/apache-tomcat-9.0.110/webapps'
         }
     }
