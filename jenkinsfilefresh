@@ -1,9 +1,9 @@
 
 def pipeLineScript(String buildStatus = 'STARTED') {
   // build status of null means successful
-if (!buildStatus || buildStatus == 'null') {
-    return
-}
+ if (buildStatus == null || buildStatus == '' || buildStatus == 'null') {
+        buildStatus = 'STARTED'
+    }
   // Default values
   def colorName = 'RED'
   def colorCode = '#FF0000'
