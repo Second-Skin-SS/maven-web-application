@@ -1,0 +1,68 @@
+slackSend (
+    message: "STARTED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+    color:"#FFA500"
+)
+pipeline {//pipeline starting
+    agent any
+    options {
+       buildDiscarder logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')
+   }
+    tools {//tools starting
+        maven 'Maven 3.9.11'
+    }//tools ending
+    stages {//stages starting
+
+        stage('CheckOutCode') {
+            steps {
+                git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a',
+                    url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
+            }
+        }
+
+        stage('BuildPackage') {
+            steps {
+                sh "mvn clean package"
+            }
+        }
+
+        stage('SonarQubeReport') {
+            steps {
+                sh "mvn sonar:sonar"
+            }
+        }
+
+        stage('UploadIntoArtifactRepository') {
+            steps {
+                sh "mvn deploy"
+            }
+        }
+
+        stage('UploadItToTomcat') {
+            steps {
+                sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
+                    sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@3.110.181.215:/opt/apache-tomcat-9.0.110/webapps'
+                }
+            }
+        }
+    }//stages ending
+	post{
+		success{
+		slackSend(
+		    message: "SUCCESS: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+		    color:"#008000"
+            ) 		
+		}
+		failure{
+		slackSend (
+		    message: "FAILURE: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+		    color:"#FF0000"
+		    )
+		}
+		always{
+		slackSend (
+		    message: "FINISHED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+		    color:"#439FE0"
+		    )
+		}
+	}//post ending
+}//pipeline ending
