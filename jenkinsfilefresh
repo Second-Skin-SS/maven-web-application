@@ -36,8 +36,8 @@ node {
     echo "Build Number is : ${env.BUILD_NUMBER}"
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5'))])
     def maven = tool name :'Maven 3.9.11'
-   try{
     pipeLineScript('STARTED')
+  try{
     stage('CheckOut Code'){
         git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a', url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
     }
