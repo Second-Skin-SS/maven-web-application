@@ -1,3 +1,30 @@
+
+def pipeLineScript(String buildStatus = 'STARTED') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (${env.BUILD_URL})"
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') {
+    color = 'YELLOW'
+    colorCode = '#FFFF00'
+  } else if (buildStatus == 'SUCCESSFUL') {
+    color = 'GREEN'
+    colorCode = '#00FF00'
+  } else {
+    color = 'RED'
+    colorCode = '#FF0000'
+  }
+
+  // Send notifications
+  slackSend (color: colorCode, message: summary)
+}
+
 node {
     echo "Job Name is: ${env.JOB_NAME}"
     echo "Node  Name is: ${env.NODE_NAME}"
@@ -5,7 +32,8 @@ node {
     properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '6', daysToKeepStr: '', numToKeepStr: '6')), pipelineTriggers([pollSCM('* * * * *')])])
 
      def maven = tool name :'Maven 3.9.11'
-   
+   try{
+    pipeLineScript('Build started')
     stage('CheckOut Code'){
         git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a', url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
     }
@@ -23,4 +51,13 @@ node {
         sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@13.233.161.50:/opt/apache-tomcat-9.0.110/webapps'
         }
     }
+}
+catch (e){
+currentBuild.result="FAILURE"
+throw e
+} finally {
+    // Success or failure, always send notificatiions
+    pipeLineScript(currentBuild.result)
+  }
+
 }
