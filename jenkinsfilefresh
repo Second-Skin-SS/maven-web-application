@@ -22,7 +22,11 @@ def pipeLineScript(String buildStatus = 'STARTED') {
   }
 
   // Send notifications
-  pipeLineScript(currentBuild.result)
+   slackSend(
+        channel: '#ent-to-end',       // Change to your Slack channel
+        color: colorCode,
+        message: summary
+    )
 }
 
 node {
@@ -55,7 +59,8 @@ node {
 catch (e){
 currentBuild.result="FAILURE"
 throw e
-} finally {
+} 
+finally {
     // Success or failure, always send notificatiions
     pipeLineScript(currentBuild.result)
   }
