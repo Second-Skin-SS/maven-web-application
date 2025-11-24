@@ -1,17 +1,24 @@
-slackSend (
-    message: "STARTED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
-    color:"#FFA500"
-)
-pipeline {//pipeline starting
-    
+pipeline {
+    agent { label 'slave' }
+
     options {
-       buildDiscarder logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')
-   }
-    tools {//tools starting
+        buildDiscarder logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')
+    }
+
+    tools {
         maven 'Maven 3.9.11'
-    }//tools ending
-	agent{ label 'slave'}
-    stages {//stages starting
+    }
+
+    stages {
+
+        stage('Notify Start') {
+            steps {
+                slackSend(
+                    message: "STARTED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                    color: "#FFA500"
+                )
+            }
+        }
 
         stage('CheckOutCode') {
             steps {
@@ -39,30 +46,31 @@ pipeline {//pipeline starting
 
         stage('UploadItToTomcat') {
             steps {
-               sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
+                sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
                     sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@52.66.181.162:/opt/apache-tomcat-9.0.110/webapps'
                 }
             }
         }
-    }//stages ending
-	post{
-		success{
-		slackSend(
-		    message: "SUCCESS: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
-		    color:"#008000"
-            ) 		
-		}
-		failure{
-		slackSend (
-		    message: "FAILURE: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
-		    color:"#FF0000"
-		    )
-		}
-		always{
-		slackSend (
-		    message: "FINISHED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
-		    color:"#439FE0"
-		    )
-		}
-	}//post ending
-}//pipeline ending
+    }
+
+    post {
+        success {
+            slackSend(
+                message: "SUCCESS: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#008000"
+            )
+        }
+        failure {
+            slackSend(
+                message: "FAILURE: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#FF0000"
+            )
+        }
+        always {
+            slackSend(
+                message: "FINISHED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#439FE0"
+            )
+        }
+    }
+}
