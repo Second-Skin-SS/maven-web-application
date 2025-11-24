@@ -3,7 +3,9 @@ slackSend (
     color:"#FFA500"
 )
 pipeline {//pipeline starting
-    agent any
+    agent{
+	label 'slave'
+}
     options {
        buildDiscarder logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')
    }
@@ -39,8 +41,8 @@ pipeline {//pipeline starting
 
         stage('UploadItToTomcat') {
             steps {
-                sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
-                    sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@3.110.181.215:/opt/apache-tomcat-9.0.110/webapps'
+               sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
+                    sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@52.66.181.162:/opt/apache-tomcat-9.0.110/webapps'
                 }
             }
         }
