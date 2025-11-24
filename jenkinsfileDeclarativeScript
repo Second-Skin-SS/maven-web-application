@@ -3,15 +3,14 @@ slackSend (
     color:"#FFA500"
 )
 pipeline {//pipeline starting
-    agent{
-	label 'slave'
-}
+    
     options {
        buildDiscarder logRotator(artifactDaysToKeepStr: '2', artifactNumToKeepStr: '4', daysToKeepStr: '2', numToKeepStr: '4')
    }
     tools {//tools starting
         maven 'Maven 3.9.11'
     }//tools ending
+	agent{ label 'slave'}
     stages {//stages starting
 
         stage('CheckOutCode') {
