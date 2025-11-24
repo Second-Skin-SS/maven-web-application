@@ -16,8 +16,7 @@ pipeline {//pipeline starting
 
         stage('CheckOutCode') {
             steps {
-                git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a',
-                    url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
+                git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a', url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
             }
         }
 
