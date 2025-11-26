@@ -103,7 +103,7 @@
 	    <snapshotRepository>
 	      <id>nexus</id>
 	      <name>mano</name>
-	      <url>http://13.235.53.50:9002/mano/repository/book-release/</url>
+	      <url>http://13.235.53.50:9002/mano/repository/book-snapshot/</url>
 	    </snapshotRepository>
 	    
 	</distributionManagement>
