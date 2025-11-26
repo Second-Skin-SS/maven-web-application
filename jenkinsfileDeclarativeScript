@@ -55,7 +55,7 @@ pipeline {
         }
 
         stage('Deploy To Tomcat') {
-            agent { label 'Built-in-Node' }  // Run on master where the WAR exists
+            agent { label 'master' }  // Run on master where the WAR exists
             steps {
                 script {
                     def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
