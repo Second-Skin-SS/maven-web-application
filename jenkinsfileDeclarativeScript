@@ -50,14 +50,26 @@ pipeline {
             }
         }
 
-        stage('UploadItToTomcat') {
-            steps {
-                sshagent(['cb3d475d-d105-49bf-a93e-1c958dfbfa2b']) {
-                    sh 'scp -o StrictHostKeyChecking=no "/var/lib/jenkins/workspace/pipeline project/target/maven-web-application.war" ec2-user@13.235.18.17:/opt/apache-tomcat-9.0.110/webapps'
-                }
+        stage('DeployToTomcat') {
+    agent { label 'master' }  // Run on master where .war exists
+    steps {
+        script {
+            def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
+            def tomcatUser = "ec2-user"
+            def tomcatHost = "13.235.18.17"
+            def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
+
+            // Check if file exists before deploying
+            if (fileExists(warFile)) {
+                sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
+                echo "WAR deployed to Tomcat successfully."
+            } else {
+                error "WAR file not found: ${warFile}"
             }
         }
     }
+}
+
 
     post {
         success {
