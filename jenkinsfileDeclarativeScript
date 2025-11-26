@@ -54,25 +54,27 @@ pipeline {
             }
         }
 
-        stage('Deploy To Tomcat') {
-            agent { label 'master' }  // Run on master where the WAR exists
-            steps {
-                script {
-                    def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
-                    def tomcatUser = "ec2-user"
-                    def tomcatHost = "13.235.18.17"
-                    def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
+        stage('DeployToTomcat') {
+    agent { label 'master' }  // Run on master where .war exists
+    steps {
+        script {
+            def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
+            def tomcatUser = "ec2-user"
+            def tomcatHost = "13.235.18.17"
+            def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
 
-                    if (fileExists(warFile)) {
-                        sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
-                        echo "WAR deployed to Tomcat successfully."
-                    } else {
-                        error "WAR file not found: ${warFile}"
-                    }
+            // Use SSH credentials stored in Jenkins (replace 'TomcatSSHKey' with your credential ID)
+            sshagent(['TomcatSSHKey']) {
+                if (fileExists(warFile)) {
+                    sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
+                    echo "WAR deployed to Tomcat successfully."
+                } else {
+                    error "WAR file not found: ${warFile}"
                 }
             }
         }
     }
+}
 
     post {
         success {
