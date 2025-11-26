@@ -1,8 +1,7 @@
 pipeline {
     agent { label 'slave' }
 
-    options {
-properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '2', daysToKeepStr: '', numToKeepStr: '2'))])    }
+    options {([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '2', daysToKeepStr: '', numToKeepStr: '2'))])    }
 
     tools {
         maven 'Maven 3.9.11'
