@@ -64,7 +64,7 @@ pipeline {
                     def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
 
                     // Use SSH credentials stored in Jenkins
-                    sshagent(['TomcatSSHKey']) {
+                    sshagent(['Pemkey']) {
                         if (fileExists(warFile)) {
                             sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
                             echo "WAR deployed to Tomcat successfully."
