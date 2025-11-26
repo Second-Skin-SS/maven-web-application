@@ -40,7 +40,7 @@ node {
         ))
     ])
 
-    def maven = tool name: 'Maven 3.9.11'
+    def maven = tool name: 'Maven3.9.11'
 
     // Send STARTED notification (YELLOW)
     pipeLineScript('STARTED')
