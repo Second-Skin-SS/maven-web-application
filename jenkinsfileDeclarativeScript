@@ -66,4 +66,37 @@ pipeline {
                     // Use SSH credentials stored in Jenkins
                     sshagent(['TomcatSSHKey']) {
                         if (fileExists(warFile)) {
-                            sh "scp -o StrictHostKeyChecking=
+                            sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
+                            echo "WAR deployed to Tomcat successfully."
+                        } else {
+                            error "WAR file not found: ${warFile}"
+                        }
+                    }
+                }
+            }
+        }
+
+    } // end stages
+
+    post {
+        success {
+            slackSend(
+                message: "SUCCESS: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#008000"
+            )
+        }
+        failure {
+            slackSend(
+                message: "FAILURE: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#FF0000"
+            )
+        }
+        always {
+            slackSend(
+                message: "FINISHED: Job ${env.JOB_NAME} [${env.BUILD_NUMBER}] ${env.BUILD_URL}",
+                color: "#439FE0"
+            )
+        }
+    }
+
+} // end pipeline
