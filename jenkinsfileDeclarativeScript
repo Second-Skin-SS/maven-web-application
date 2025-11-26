@@ -15,6 +15,7 @@ pipeline {
     tools {
         maven 'Maven 3.9.11'
     }
+
     stages {
 
         stage('Notify Start') {
@@ -28,48 +29,50 @@ pipeline {
 
         stage('CheckOutCode') {
             steps {
-                git credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a', url: 'https://github.com/Second-Skin-SS/maven-web-application.git'
+                git(
+                    url: 'https://github.com/Second-Skin-SS/maven-web-application.git',
+                    credentialsId: 'c9db6e7c-05d0-48ce-9423-e0afdae84d3a'
+                )
             }
         }
 
-        stage('BuildPackage') {
+        stage('Build Package') {
             steps {
-                sh "mvn clean package"
+                sh 'mvn clean package'
             }
         }
 
-        stage('SonarQubeReport') {
+        stage('SonarQube Report') {
             steps {
-                sh "mvn sonar:sonar"
+                sh 'mvn sonar:sonar'
             }
         }
 
-        stage('UploadIntoArtifactRepository') {
+        stage('Upload Into Artifact Repository') {
             steps {
-                sh "mvn deploy"
+                sh 'mvn deploy'
             }
         }
 
-        stage('DeployToTomcat') {
-    agent { label 'master' }  // Run on master where .war exists
-    steps {
-        script {
-            def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
-            def tomcatUser = "ec2-user"
-            def tomcatHost = "13.235.18.17"
-            def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
+        stage('Deploy To Tomcat') {
+            agent { label 'master' }  // Run on master where the WAR exists
+            steps {
+                script {
+                    def warFile = "${env.WORKSPACE}/target/maven-web-application.war"
+                    def tomcatUser = "ec2-user"
+                    def tomcatHost = "13.235.18.17"
+                    def tomcatPath = "/opt/apache-tomcat-9.0.110/webapps"
 
-            // Check if file exists before deploying
-            if (fileExists(warFile)) {
-                sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
-                echo "WAR deployed to Tomcat successfully."
-            } else {
-                error "WAR file not found: ${warFile}"
+                    if (fileExists(warFile)) {
+                        sh "scp -o StrictHostKeyChecking=no '${warFile}' ${tomcatUser}@${tomcatHost}:${tomcatPath}"
+                        echo "WAR deployed to Tomcat successfully."
+                    } else {
+                        error "WAR file not found: ${warFile}"
+                    }
+                }
             }
         }
     }
-}
-
 
     post {
         success {
@@ -91,5 +94,4 @@ pipeline {
             )
         }
     }
-	}	
-}	
+}
